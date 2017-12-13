@@ -13,12 +13,12 @@ class userTV(QTreeWidget):
 			self.setSelectionBehavior(QAbstractItemView.SelectRows)
 			self.setSelectionMode(QAbstractItemView.MultiSelection)
 			# self.model = QStandardItemModel()
-			self.setColumnCount(8)
-			self.totalHeaders = ['ID','Forename', 'Surname', 'Email', 'Occurrence', 'Course', 'Attendence', 'Lateness']
+			self.setColumnCount(5)
+			self.totalHeaders = ['ID','Forename', 'Surname', 'Email', 'Course']
 			self.activeHeaders = []
 			self.setHeaderLabels(self.totalHeaders)
-			self.headerMapping = {'ID':'id', 'Forename':'forename', 'Surname':'surname', 'Email':'email', 'Occurrence':'occurence', 'Course':'course', 'Attendence':'attendence', 'Lateness':'lateness'}
-			self.showHeaders = {'ID':True, 'Forename':True, 'Surname':True, 'Email':True, 'Occurrence':True, 'Course':True, 'Attendence':True, 'Lateness':True}
+			self.headerMapping = {'ID':'id', 'Forename':'forename', 'Surname':'surname', 'Email':'email', 'Course':'course'}
+			self.showHeaders = {'ID':True, 'Forename':True, 'Surname':True, 'Email':True, 'Course':True}
 			# self.setModel(self.model)
 			self.setUniformRowHeights(True)
 			self.userList = userList
@@ -63,7 +63,9 @@ class userTV(QTreeWidget):
 			col = self.columnAt(position.x())
 			print (col)
 			headerText = self.headerItem().text(col)
-			sort = menu.addAction(self.tr("Sort by " + headerText))
+			# sort = menu.addAction(self.tr("Sort by " + headerText))
+			sortText =  ("Sort by " +  str(headerText))
+			sort = menu.addAction(self.tr(sortText))
 			hide = menu.addAction(self.tr("Hide"))
 			menu.addSeparator()
 			badger = menu.addAction(self.tr("badger"))  # Add in the show column list here
