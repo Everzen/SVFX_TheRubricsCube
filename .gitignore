@@ -1,2 +1,3 @@
 ############# Protect Sample User XML information
 *.xml
+*.db
