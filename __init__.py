@@ -2,6 +2,7 @@ import sys, os, pprint, time
 from PySide.QtCore import *
 from PySide.QtGui import *
 import qdarkstyle
+import json
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 from operator import itemgetter
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -10,13 +11,19 @@ import googleSheet
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 app = QApplication(sys.argv)
 app.setStyleSheet(qdarkstyle.load_stylesheet())
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~RESOURCES~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+markingDataJsonFile = "resources/MarkingData.json"
+
+#~~~~~~~~~~~~~~~~~~~~~~FUNCTIONS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+def grabInfo(infoType, jsonFile = markingDataJsonFile):
+    with open(jsonFile) as json_file:
+            info = json.load(json_file)
+            return info[infoType]
 
 
 
-
-
-
+staffList  = grabInfo("staff")
 # print ("COURSE DATA")
 # print ("Course Name : " + root.get('Textbox12'))
 # print ("Course Code : " + root.get('Textbox4'))
@@ -26,25 +33,30 @@ app.setStyleSheet(qdarkstyle.load_stylesheet())
 
 
 print ("\nSTUDENT LIST\n")
-staffList = [{"name":"Gwyn Carlisle", "gmail":"gwynnethcarville@gmail.com"},
-            {"name":"Jim Costello", "gmail":"unknown"},
-            {"name":"Richard Jones", "gmail":"3dframework@gmail.com"},
-            {"name":"Matt Lilley", "gmail":"mattpaullilley@gmail.com"},
-            {"name":"Richard McEvoy-Crompton", "gmail":"fabrikbouche@gmail.com"},
-            {"name":"Claire Minehane", "gmail":"unknown"},
-            {"name":"Jack Myers", "gmail":"jacko83@gmail.com"},
-            {"name":"Sam Taylor", "gmail":"samtaylorsfx@gmail.com"},
-            {"name":"Mark Whyte", "gmail":"mark1virtual@gmail.com"},
-            {"name":"Natalie Woods", "gmail":"njwoods87@hotmail.co.uk"}]
+# staffList = [{"name":"Gwyn Carlisle", "gmailID":"gwynnethcarville@gmail.com"},
+#             {"name":"Jim Costello", "gmailID":"unknown"},
+#             {"name":"Richard Jones", "gmailID":"3dframework@gmail.com"},
+#             {"name":"Matt Lilley", "gmailID":"mattpaullilley@gmail.com"},
+#             {"name":"Richard McEvoy-Crompton", "gmailID":"fabrikbouche@gmail.com"},
+#             {"name":"Claire Minehane", "gmailID":"unknown"},
+#             {"name":"Jack Myers", "gmailID":"jacko83@gmail.com"},
+#             {"name":"Sam Taylor", "gmailID":"samtaylorsfx@gmail.com"},
+#             {"name":"Mark Whyte", "gmailID":"mark1virtual@gmail.com"},
+#             {"name":"Natalie Woods", "gmailID":"njwoods87@hotmail.co.uk"}]
 
 
 
-courseList = [{"name":"BDes(Hons) Special Effects for Film and Television", "code":"CRT022-F-UOB-SX", "shortName":"SFX"},
-              {"name":"BSc (Hons) Visual Effects for Film and Television", "code":"CRT021-F-UOB-SX", "shortName":"VFX"},
-              {"name":"BDes(H) Special Make Up Effects for Film and TV", "code":"CRT002-F-UOB-SX", "shortName":"SMUFX"},
-              {"name":"BDes(Hons) Special Effects Modelmaking for Film and Television", "code":"CRT007-F-UOB-SX", "shortName":"MMFX"}] 
+courseList = grabInfo("courseList")
 
+# courseList = [{"name":"BDes(Hons) Special Effects for Film and Television", "code":"CRT022-F-UOB-SX", "shortName":"SFX"},
+#               {"name":"BSc (Hons) Visual Effects for Film and Television", "code":"CRT021-F-UOB-SX", "shortName":"VFX"},
+#               {"name":"BDes(H) Special Make Up Effects for Film and TV", "code":"CRT002-F-UOB-SX", "shortName":"SMUFX"},
+#               {"name":"BDes(Hons) Special Effects Modelmaking for Film and Television", "code":"CRT007-F-UOB-SX", "shortName":"MMFX"}] 
 
+yearInfo = grabInfo("academicYears")
+yearList  = []
+for y in yearInfo:
+    yearList.append(y["year"])
 
 # loanList = [studentList[0], studentList[1]]
 
@@ -124,7 +136,7 @@ class SVFX_AssetTrackerUI(QDialog):
         yearLayout = QHBoxLayout()
         yearLabel = QLabel("Select Academic Year:")
         self.yearCombo = QComboBox(self)
-        self.yearCombo.addItems(["2017-18","2018-19","2019-20","2020-21", "2021-22","2022-23"])    #HARDCODED year dates
+        self.yearCombo.addItems(yearList)    #HARDCODED year dates
 
         yearLayout.addWidget(yearLabel)
         yearLayout.addWidget(self.yearCombo)
@@ -213,13 +225,13 @@ class SVFX_AssetTrackerUI(QDialog):
     def firstMarkerComboSel(self, text):
         gmail = ""
         for s in staffList:
-            if text == s["name"]: gmail = s["gmail"]
+            if text == s["name"]: gmail = s["gmailID"]
         self.firstMarkerEmail.setText(gmail)
 
     def secondMarkerComboSel(self, text):
         gmail = ""
         for s in staffList:
-            if text == s["name"]: gmail = s["gmail"]
+            if text == s["name"]: gmail = s["gmailID"]
         self.secondMarkerEmail.setText(gmail)
 
     def buildModuleBox(self):
@@ -257,28 +269,28 @@ class SVFX_AssetTrackerUI(QDialog):
 
 
     def createMarkingFolders(self):
-    	self.buildModuleBoxFolders() #Build the standard modulebox Template
+        self.buildModuleBoxFolders() #Build the standard modulebox Template
         folderStudents = self.userListTV.getUserList()
         markingFolder = self.userListTV.getMarkingDirectory()
         self.studentFolders = []
         for s in folderStudents:
-			studentFolderDetails = {}
-			folderName = s['surname'] + "_" + s['forename'] + "_ID_" + s['id']
-			studentFolderDetails['id'] = s['id']
-			studentFolderDetails['folder'] = (markingFolder + "//" + folderName)
-			self.studentFolders.append(studentFolderDetails)
-			os.mkdir(markingFolder + "//" + folderName)
-			for i in range(0, self.assignmentDetails["number"]):
-			    os.mkdir(markingFolder + "//" + folderName + "//" + self.assignmentDetails['titles'][i])
-			self.sortAssignmentsLabel.setEnabled(True)
-			self.assignmentCombo.setEnabled(True)
-			self.sortAssignmentsButton.setEnabled(True)
+        	studentFolderDetails = {}
+        	folderName = s['surname'] + "_" + s['forename'] + "_ID_" + s['id']
+        	studentFolderDetails['id'] = s['id']
+        	studentFolderDetails['folder'] = (markingFolder + "//" + folderName)
+        	self.studentFolders.append(studentFolderDetails)
+        	os.mkdir(markingFolder + "//" + folderName)
+        	for i in range(0, self.assignmentDetails["number"]):
+        	    os.mkdir(markingFolder + "//" + folderName + "//" + self.assignmentDetails['titles'][i])
+        	self.sortAssignmentsLabel.setEnabled(True)
+        	self.assignmentCombo.setEnabled(True)
+        	self.sortAssignmentsButton.setEnabled(True)
 
     def sortAssignmentFiles(self):
     	assignmentFolder = self.assignmentCombo.currentText()
     	markingFolder = self.userListTV.getMarkingDirectory()
     	if (assignmentFolder == "No Assignment info") or ((assignmentFolder == "Specify assignment...")): 
-    		print "Error - No Assignment Names Listed"
+    		print("Error - No Assignment Names Listed")
     		return 0
     	else:
     		dirFiles = [f for f in os.listdir(markingFolder) if os.path.isfile(os.path.join(markingFolder, f))]
