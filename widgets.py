@@ -138,6 +138,13 @@ class userTV(QTreeWidget):
 				self.setHeaderLabels(self.activeHeaders)
 				self.populateTreeList()
 
+		def loadModule(self, fileName):
+			self.xmlFile = fileName
+			self.getStudents()
+			self.populateTreeList()
+			self.dirLabel.setText(" - " + self.moduleTitle)
+			self.dirLabel.repaint()
+
 		# The following three methods set up dragging and dropping for the app
 		def dragEnterEvent(self, e):
 		    if e.mimeData().hasUrls:
@@ -170,7 +177,7 @@ class userTV(QTreeWidget):
 		        self.markingDirectory = os.path.dirname(self.xmlFile)
 		        # print(self.xmlFile)
 		        # print(self.markingDirectory)
-		        self.dirLabel.setText(self.markingDirectory)
+		        self.dirLabel.setText(self.moduleTitle)
 		        # print("Dir Text: " + self.dirLabel.text())
 		        self.dirLabel.repaint()
 		        print "Got called"
@@ -179,7 +186,6 @@ class userTV(QTreeWidget):
 		        self.populateTreeList()
 		        # print(self.xmlFile)
 		        # print(self.markingDirectory)
-		        self.dirLabel.setText(self.moduleCode + " - " + self.markingDirectory)
 		        # print("Dir Text: " + self.dirLabel.text())		    else:
 		    	print "ignored"
 		        e.ignore()

@@ -1,3 +1,8 @@
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#TO DO:
+#       MAke sure you share the "Academic Years" Google folder
+
+
 import sys, os, pprint, time
 from PySide.QtCore import *
 from PySide.QtGui import *
@@ -60,6 +65,13 @@ for y in yearInfo:
 
 # loanList = [studentList[0], studentList[1]]
 
+#Find all files in the default SVFX Module folder
+moduleFolder = grabInfo("resourcePaths")["moduleListFolder"]
+moduleList = []
+for f in os.listdir(moduleFolder):
+    moduleList.append({"name":f, "fullPath":(moduleFolder + "\\" + f)})
+
+semesterList = grabInfo("semesters")
 
 class SVFX_AssetTrackerUI(QDialog):
     def __init__(self, parent=None):
@@ -67,7 +79,7 @@ class SVFX_AssetTrackerUI(QDialog):
         self.assignmentDetails = {} #A dict to contain information about the assignments, once the marking module sheet is setup.
         self.studentFolders = []
 
-        self.folderLabel = QLabel("Path to be displayed here...")  #Define Folder label early so that it can be passed to the list widget
+        self.folderLabel = QLabel(" - ")  #Define Folder label early so that it can be passed to the list widget
         # self.folderLabel.setText("moo")
 
         userLeftLayout = QVBoxLayout()
@@ -81,11 +93,17 @@ class SVFX_AssetTrackerUI(QDialog):
         # self.tabWidget.addTab(QWidget(), "Quest Specific")
 
         moduleFolderLayout = QHBoxLayout()
-        foldernameLabel = QLabel("MARKING FOLDER:")
+        foldernameLabel = QLabel("SPECIFY MODULE:")
+        self.chooseModuleCombo = QComboBox(self)
+        self.chooseModuleCombo.addItem("Please choose module....")
+        for module in moduleList: self.chooseModuleCombo.addItem(module["name"])   
+        self.chooseModuleCombo.activated[str].connect(self.moduleComboSel)       
+        
         foldernameLabel.setMaximumWidth(95)
         # self.folderLabel = QLabel("Path to be displayed here...")
         
         moduleFolderLayout.addWidget(foldernameLabel)
+        moduleFolderLayout.addWidget(self.chooseModuleCombo)
         moduleFolderLayout.addWidget(self.folderLabel)
 
         userLeftLayout.addLayout(moduleFolderLayout)
@@ -134,12 +152,14 @@ class SVFX_AssetTrackerUI(QDialog):
 
 
         yearLayout = QHBoxLayout()
-        yearLabel = QLabel("Select Academic Year:")
         self.yearCombo = QComboBox(self)
-        self.yearCombo.addItems(yearList)    #HARDCODED year dates
+        self.yearCombo.addItems(yearList)    #JSON Coded year dates
+        self.semesterCombo = QComboBox(self)
+        self.semesterCombo.addItems(semesterList)    #JSON Coded year dates
 
-        yearLayout.addWidget(yearLabel)
         yearLayout.addWidget(self.yearCombo)
+        yearLayout.addWidget(self.semesterCombo)
+        self.getGoogleFolderID()
 
         prepDateLabel = QLabel("Module Preparation Date:")
         self.prepDate = QCalendarWidget(self)
@@ -210,6 +230,16 @@ class SVFX_AssetTrackerUI(QDialog):
 
         self.setWindowTitle("The Rubrics Cube")
 
+    def moduleComboSel(self, text):
+        #Find the file name
+        fname = None
+        for m in moduleList:
+            if text == m["name"]: fname = m["fullPath"]
+        if fname:
+            self.userListTV.loadModule(fname)
+
+
+
     def filterCourses(self):
         #Grab the selection state of the Course List widget
         selCourses = self.courseListLW.selectedItems()
@@ -233,6 +263,18 @@ class SVFX_AssetTrackerUI(QDialog):
         for s in staffList:
             if text == s["name"]: gmail = s["gmailID"]
         self.secondMarkerEmail.setText(gmail)
+
+    def getGoogleFolderID(self):
+        print(self.yearCombo.currentText())
+        print(self.semesterCombo.currentText())
+        for year in yearInfo:
+            if year["year"] == self.yearCombo.currentText():
+                #We have the Correct Year, so return the Semester Code
+                print(year[self.semesterCombo.currentText()])
+
+
+    def getMasterTemplateGoogleID(self):
+        return grabInfo("resourcePaths")["masterGoogleTemplate"]
 
     def buildModuleBox(self):
         #We need to build all the data into a dictionary to pass to the relevant function that will build the google sheet
