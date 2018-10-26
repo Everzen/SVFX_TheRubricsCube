@@ -1,6 +1,7 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #TO DO:
 #       MAke sure you share the "Academic Years" Google folder
+#       Update folders for sending emails and copying student ID numbers
 
 
 import sys, os, pprint, time
@@ -73,6 +74,9 @@ for f in os.listdir(moduleFolder):
 
 semesterList = grabInfo("semesters")
 
+#Build an empty dictionary that we can build 
+rcMenuData = grabInfo("RCMenus")
+
 class SVFX_AssetTrackerUI(QDialog):
     def __init__(self, parent=None):
         super(SVFX_AssetTrackerUI, self).__init__(parent)
@@ -83,7 +87,7 @@ class SVFX_AssetTrackerUI(QDialog):
         # self.folderLabel.setText("moo")
 
         userLeftLayout = QVBoxLayout()
-        self.userListTV = widgets.userTV(courseList, self.folderLabel)
+        self.userListTV = widgets.userTV(courseList, self.folderLabel, rcMenuData)
         self.setMinimumSize(400,800)
         self.setMaximumSize(1150,800)
         self.tabWidget = QTabWidget()
@@ -278,7 +282,6 @@ class SVFX_AssetTrackerUI(QDialog):
 
     def buildModuleBox(self):
         #We need to build all the data into a dictionary to pass to the relevant function that will build the google sheet
-        moduleData = {}
         markingUserList = self.userListTV.getUserList()
         markingUserList = sorted(markingUserList, key=lambda k: k['surname']) #Sort the list into alphabetical by surname
         moduleData["students"] = markingUserList

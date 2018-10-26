@@ -2,6 +2,7 @@
 from PySide.QtCore import *
 from PySide.QtGui import *
 import os
+import webbrowser
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 import xml.etree.ElementTree as ET
 from operator import itemgetter
@@ -10,7 +11,7 @@ from operator import itemgetter
 
 
 class userTV(QTreeWidget):
-		def __init__(self, courseList, dirLabel, parent = None):
+		def __init__(self, courseList, dirLabel, rcMenuData,parent = None):
 			QTreeWidget.__init__(self, parent)
 			self.setAcceptDrops(True)
 			self.courseList = courseList
@@ -39,6 +40,8 @@ class userTV(QTreeWidget):
 			self.customContextMenuRequested.connect(self.userMenu)
 			self.header().setContextMenuPolicy(Qt.CustomContextMenu) #context menu for headers
 			self.header().customContextMenuRequested.connect(self.headerMenu)
+
+			self.rcMenuData = rcMenuData
 			# self.populateTreeList()
 			# userTWItem = QTreeWidgetItem(self,["Please Drag and Drop Module File here...."])    #Initialise with drag and drog instructions
 			# self.addTopLevelItem(userTWItem)
@@ -112,9 +115,21 @@ class userTV(QTreeWidget):
 
 		def userMenu(self, position):
 			menu = QMenu()
-			menu.addAction(self.tr("Copy Email"))
-			menu.addAction(self.tr("Sort"))
+			#Emailing Menu Functionality
+			menu.addAction("Copy Email Addresses")
+			copyEmail = menu.addMenu(self.tr("Send Email"))
+			# for email in module
+			for m in self.rcMenuData["emails"]:
+				print("Email name : " + m["name"])
+				# copyEmail.addAction(self.tr(m["name"]))
+				copyEmail.addAction(self.tr(str(m["name"])))
+			menu.addSeparator()
+			menu.addAction(self.tr("Copy Student ID"))
+			copyStudentID = menu.addMenu(self.tr("Open Student ID"))
+			for m in self.rcMenuData["studentIDLinks"]:
+				copyStudentID.addAction(self.tr(str(m["name"])))
 			menu.exec_(self.viewport().mapToGlobal(position))
+			# menu.triggered.connect(self.onTriggered)
 
 		def headerMenu(self, position):
 			menu = QMenu()
