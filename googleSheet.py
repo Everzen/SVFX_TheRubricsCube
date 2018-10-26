@@ -17,10 +17,19 @@ from oauth2client import file, client, tools
 import pprint
 import time
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+markingDataJsonFile = "resources/MarkingData.json"
+
+#~~~~~~~~~~~~~~~~~~~~~~FUNCTIONS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+def grabInfo(infoType, jsonFile = markingDataJsonFile):
+    with open(jsonFile) as json_file:
+            info = json.load(json_file)
+            return info[infoType]
+
 
 #Hard Coded statistics 
-studentStartRow = 7
-studentEndRow = 98
+studentStartRow = grabInfo("spreadSheet")["startRow"]
+studentEndRow = grabInfo("spreadSheet")["studentNumber"]
 
 # moduleData = {students: [], "code": "SFX0000", "year": "2017-18"}
 
@@ -39,15 +48,15 @@ def buildMarkSheet(moduleData):
   # Build a service, but the type of service that you build will have different methods and properties. In this cause we are building a drive service, so that we can do file operations on the drive
   SERVICE = discovery.build('drive', 'v2', http=credz.authorize(Http()))
 
-  #State the ID for the Master Mark sheet that we have setup online
-  masterMarkSheet_ID = "1BWfNFIPcPvinEfaSYvVvun3QfmwwYNoKeprseXU7uh8"
-  folderUrlID = "1EFHIP6aSWv5Rmot7a65b9fXi-anWyumc"  #This is the id in the url to make sure that we copy the marksheet to the correct shared folder.... HARDCODED - But will need to change in future
-  
+  #moduleData["masterGTemplate"] - contains the google ID for the master Template file. moduleData["markingGFolder"] - contains the Google ID for year and semester folder that we are aiming for.
   moduleMarkingTitle = moduleData["code"] + "_" + moduleData["year"]
-  moduleMarkingCopiedfile = {'title': moduleMarkingTitle, 'parents': [{'id': folderUrlID}]}
+  moduleMarkingCopiedfile = {'title': moduleMarkingTitle, 'parents': [{'id': moduleData["markingGFolder"]}]}
+  # moduleMarkingCopiedfile = {'title': moduleMarkingTitle, 'parents': [{'id': "16FMmH6li_jCHnTWS2VcPSbOAaSd-GrAz"}]}
+
 
   #Call the files.cop() method which works for this kind of drive service - the return object has a dictionary that we can reference the id from using ModuleMarkSheet['id']
-  ModuleMarkSheet = SERVICE.files().copy(fileId=masterMarkSheet_ID, body=moduleMarkingCopiedfile).execute()
+  ModuleMarkSheet = SERVICE.files().copy(fileId=moduleData["masterGTemplate"], body=moduleMarkingCopiedfile).execute()
+  # ModuleMarkSheet = SERVICE.files().copy(fileId="1BWfNFIPcPvinEfaSYvVvun3QfmwwYNoKeprseXU7uh8", body=moduleMarkingCopiedfile).execute()
 
 
   studentSheetData = []

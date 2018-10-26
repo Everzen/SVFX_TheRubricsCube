@@ -269,11 +269,11 @@ class SVFX_AssetTrackerUI(QDialog):
         print(self.semesterCombo.currentText())
         for year in yearInfo:
             if year["year"] == self.yearCombo.currentText():
-                #We have the Correct Year, so return the Semester Code
-                print(year[self.semesterCombo.currentText()])
+                return year[self.semesterCombo.currentText()]
 
 
     def getMasterTemplateGoogleID(self):
+        print("MasterTemplate : " + grabInfo("resourcePaths")["masterGoogleTemplate"])
         return grabInfo("resourcePaths")["masterGoogleTemplate"]
 
     def buildModuleBox(self):
@@ -288,6 +288,8 @@ class SVFX_AssetTrackerUI(QDialog):
         moduleData["reviewDate"] = str(self.reviewDate.selectedDate().day()) + "/" + str(self.reviewDate.selectedDate().month()) + "/" + str(self.reviewDate.selectedDate().year())
         moduleData["firstMarker"] = self.firstMarkerCombo.currentText()
         moduleData["secondMarker"] = self.secondMarkerCombo.currentText()
+        moduleData["masterGTemplate"] = self.getMasterTemplateGoogleID()
+        moduleData["markingGFolder"] = self.getGoogleFolderID()
         pprint.pprint(moduleData)
         self.assignmentDetails = googleSheet.buildMarkSheet(moduleData)
         #Now that we have the assessment details, we can add the items to the combo box
