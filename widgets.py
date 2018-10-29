@@ -3,6 +3,8 @@ from PySide.QtCore import *
 from PySide.QtGui import *
 import os
 import webbrowser
+import win32com.client as win32   
+import pyperclip
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 import xml.etree.ElementTree as ET
 from operator import itemgetter
@@ -114,22 +116,97 @@ class userTV(QTreeWidget):
 			self.populateTreeList()
 
 		def userMenu(self, position):
+			#Make sure item under selection mouse is selected
+			item = self.itemAt(position)
+			item.setSelected(True)
 			menu = QMenu()
+
 			#Emailing Menu Functionality
-			menu.addAction("Copy Email Addresses")
+			copyEmails = menu.addAction("Copy Email Addresses")
+			copyEmails.triggered.connect(self.copyEmailsToClipboard)
+			generalEmail = menu.addAction("Send General Email")
+			generalEmail.triggered.connect(self.sendGeneralEmail)
 			copyEmail = menu.addMenu(self.tr("Send Email"))
 			# for email in module
 			for m in self.rcMenuData["emails"]:
-				print("Email name : " + m["name"])
-				# copyEmail.addAction(self.tr(m["name"]))
-				copyEmail.addAction(self.tr(str(m["name"])))
+				emailAction = copyEmail.addAction(str(m["name"]))
+				emailAction.triggered[()].connect(lambda item=m["name"]: self.sendContentEmail(item))
+
+			if (len(self.selectedItems()) == 1): #Copying ID numbers only makes sense for an individual
+				menu.addSeparator()
+				copyStudentID = menu.addAction(self.tr("Copy Student ID"))
+				copyStudentID.triggered[()].connect(lambda item=position: self.copyIDToClipboard(item))
+				copyStudentID = menu.addMenu(self.tr("Open Student ID"))
+				for m in self.rcMenuData["studentIDLinks"]:
+					linkData = {"position":position, "text":m["name"]}
+					IDAction = copyStudentID.addAction(str(m["name"]))
+					IDAction.triggered[()].connect(lambda item=linkData: self.openIDPage(item))
 			menu.addSeparator()
-			menu.addAction(self.tr("Copy Student ID"))
-			copyStudentID = menu.addMenu(self.tr("Open Student ID"))
-			for m in self.rcMenuData["studentIDLinks"]:
-				copyStudentID.addAction(self.tr(str(m["name"])))
+			sendAdminID = menu.addAction(str("Send to " + self.rcMenuData["administratorContact"]["name"]))
+			menu.addSeparator()
+			clearSelection = menu.addAction(self.tr("Clear Selection"))
+			clearSelection.triggered.connect(self.clearSelection)
 			menu.exec_(self.viewport().mapToGlobal(position))
-			# menu.triggered.connect(self.onTriggered)
+
+		def getColumnNumber(self, headerLabel):
+			header = self.headerItem()
+			for i in range(0,header.columnCount()):
+				# print(header.text(i) + " " + headerLabel)
+				if header.text(i) == headerLabel:
+					return i
+
+		def getEmailStringList(self):
+			#cycle through selected items and add emails strings together
+			self.getColumnNumber("Email")
+			emailString = ""
+			for item in self.selectedItems():
+				emailString = emailString + item.text(self.getColumnNumber("Email")) + "; "  #This is a hardcoded reference to the email column
+			# print("Email String is: " + emailString)
+			return emailString
+
+		def copyEmailsToClipboard(self):
+			pyperclip.copy(self.getEmailStringList())
+
+		def emailer(self, text, subject, recipient):
+			outlook = win32.Dispatch('outlook.application')
+			mail = outlook.CreateItem(0)
+			mail.To = recipient
+			mail.Subject = subject
+			mail.HtmlBody = text
+			mail.Display(True)
+
+		def sendGeneralEmail(self):
+			self.emailer("", "", self.getEmailStringList())
+
+		def sendContentEmail(self, dictText):
+			emailList = self.getEmailStringList()
+			# print(str(self.rcMenuData["emails"]))
+			for email in self.rcMenuData["emails"]:
+				if email["name"] == dictText:
+					self.emailer(email["body"], email["subject"], self.getEmailStringList())
+
+		def copyIDToClipboard(self, position):
+			item = self.itemAt(position)
+			IDNo = str(item.text(self.getColumnNumber("ID")))
+			pyperclip.copy(IDNo)
+			print(IDNo)
+
+		def openIDPage(self, linkData):
+			#Copy Studnet ID to clipboard
+			self.copyIDToClipboard(linkData["position"])
+			#We can only have one selected Item so
+			for links in self.rcMenuData["studentIDLinks"]:
+				if links["name"] == linkData["text"]: #We know which link it is to open
+					chrome_path = self.rcMenuData["resourcePaths"]["chrome"]
+					webbrowser.get(chrome_path).open(links["link"])
+
+
+
+
+		def clearSelection(self):
+			for item in self.selectedItems():
+				item.setSelected(False)
+
 
 		def headerMenu(self, position):
 			menu = QMenu()

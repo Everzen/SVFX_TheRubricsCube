@@ -76,6 +76,8 @@ semesterList = grabInfo("semesters")
 
 #Build an empty dictionary that we can build 
 rcMenuData = grabInfo("RCMenus")
+rcMenuData["administratorContact"] = grabInfo("administratorContact")
+rcMenuData["resourcePaths"] = grabInfo("resourcePaths")
 
 class SVFX_AssetTrackerUI(QDialog):
     def __init__(self, parent=None):
@@ -153,7 +155,6 @@ class SVFX_AssetTrackerUI(QDialog):
             self.secondMarkerCombo.addItem(s["name"])
         self.secondMarkerEmail = QLineEdit()
         self.secondMarkerEmail.setReadOnly(True)
-
 
         yearLayout = QHBoxLayout()
         self.yearCombo = QComboBox(self)
