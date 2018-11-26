@@ -309,12 +309,12 @@ class SVFX_AssetTrackerUI(QDialog):
     def buildModuleBoxFolders(self):
     	markingFolder = moduleFolder #Every time you see this line, we need to replace this with an established local Marking Folder that is chosen by a directory Picker
     	modulefolderName = self.userListTV.getModuleCode() + "_" + self.userListTV.getModuleTitle()
-    	os.mkdir(markingFolder + "//_ModuleBox")
-    	os.mkdir(markingFolder + "//_ModuleBox" + "//" +  modulefolderName)
-    	os.mkdir(markingFolder + "//_ModuleBox" + "//" +  modulefolderName + "//" + "1.0 Module Guide")
-    	os.mkdir(markingFolder + "//_ModuleBox" + "//" +  modulefolderName + "//" + "2.0 Assessments & Assessment Moderation")
-    	os.mkdir(markingFolder + "//_ModuleBox" + "//" +  modulefolderName + "//" + "3.0 Sample of Work")
-    	os.mkdir(markingFolder + "//_ModuleBox" + "//" +  modulefolderName + "//" + "4.0 Module Evaluation")
+    	if(not os.path.exists(markingFolder + "//_ModuleBox")): os.mkdir(markingFolder + "//_ModuleBox")
+    	if(not os.path.exists(markingFolder + "//_ModuleBox" + "//" +  modulefolderName)): os.mkdir(markingFolder + "//_ModuleBox" + "//" +  modulefolderName)
+    	if(not os.path.exists(markingFolder + "//_ModuleBox" + "//" +  modulefolderName + "//" + "1.0 Module Guide")): os.mkdir(markingFolder + "//_ModuleBox" + "//" +  modulefolderName + "//" + "1.0 Module Guide")
+    	if(not os.path.exists(markingFolder + "//_ModuleBox" + "//" +  modulefolderName + "//" + "2.0 Assessments & Assessment Moderation")): os.mkdir(markingFolder + "//_ModuleBox" + "//" +  modulefolderName + "//" + "2.0 Assessments & Assessment Moderation")
+    	if(not os.path.exists(markingFolder + "//_ModuleBox" + "//" +  modulefolderName + "//" + "3.0 Sample of Work")): os.mkdir(markingFolder + "//_ModuleBox" + "//" +  modulefolderName + "//" + "3.0 Sample of Work")
+    	if(not os.path.exists(markingFolder + "//_ModuleBox" + "//" +  modulefolderName + "//" + "4.0 Module Evaluation")): os.mkdir(markingFolder + "//_ModuleBox" + "//" +  modulefolderName + "//" + "4.0 Module Evaluation")
 
 
     def createMarkingFolders(self):
@@ -328,9 +328,9 @@ class SVFX_AssetTrackerUI(QDialog):
         	studentFolderDetails['id'] = s['id']
         	studentFolderDetails['folder'] = (markingFolder + "//" + folderName)
         	self.studentFolders.append(studentFolderDetails)
-        	os.mkdir(markingFolder + "//" + folderName)
+        	if(not os.path.exists(markingFolder + "//" + folderName)): os.mkdir(markingFolder + "//" + folderName)
         	for i in range(0, self.assignmentDetails["number"]):
-        	    os.mkdir(markingFolder + "//" + folderName + "//" + self.assignmentDetails['titles'][i])
+        	    if(not os.path.exists(markingFolder + "//" + folderName + "//" + self.assignmentDetails['titles'][i])): os.mkdir(markingFolder + "//" + folderName + "//" + self.assignmentDetails['titles'][i])
         	self.sortAssignmentsLabel.setEnabled(True)
         	self.assignmentCombo.setEnabled(True)
         	self.sortAssignmentsButton.setEnabled(True)
