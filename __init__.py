@@ -1,8 +1,8 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #TO DO:
-#       MAke sure you share the "Academic Years" Google folder
-#       Update folders for sending emails and copying student ID numbers
-
+#       Update folders for sending emails and copying student ID numbers - This is done, but there is a problem with copying large strings to an email, so there is going to have to be a workaround
+#       Have a button that opens the correct module folder and also loads the correct page to download the module XML
+#       Module marking folders are being generated into the central Module Lists folder at the moment - Need to add the a directory chooser to specify where these folders go
 
 import sys, os, pprint, time
 from PySide.QtCore import *
@@ -283,6 +283,7 @@ class SVFX_AssetTrackerUI(QDialog):
 
     def buildModuleBox(self):
         #We need to build all the data into a dictionary to pass to the relevant function that will build the google sheet
+        moduleData={}
         markingUserList = self.userListTV.getUserList()
         markingUserList = sorted(markingUserList, key=lambda k: k['surname']) #Sort the list into alphabetical by surname
         moduleData["students"] = markingUserList
@@ -306,7 +307,7 @@ class SVFX_AssetTrackerUI(QDialog):
 
 
     def buildModuleBoxFolders(self):
-    	markingFolder = self.userListTV.getMarkingDirectory()
+    	markingFolder = moduleFolder #Every time you see this line, we need to replace this with an established local Marking Folder that is chosen by a directory Picker
     	modulefolderName = self.userListTV.getModuleCode() + "_" + self.userListTV.getModuleTitle()
     	os.mkdir(markingFolder + "//_ModuleBox")
     	os.mkdir(markingFolder + "//_ModuleBox" + "//" +  modulefolderName)
@@ -319,7 +320,7 @@ class SVFX_AssetTrackerUI(QDialog):
     def createMarkingFolders(self):
         self.buildModuleBoxFolders() #Build the standard modulebox Template
         folderStudents = self.userListTV.getUserList()
-        markingFolder = self.userListTV.getMarkingDirectory()
+        markingFolder = moduleFolder
         self.studentFolders = []
         for s in folderStudents:
         	studentFolderDetails = {}
@@ -336,7 +337,7 @@ class SVFX_AssetTrackerUI(QDialog):
 
     def sortAssignmentFiles(self):
     	assignmentFolder = self.assignmentCombo.currentText()
-    	markingFolder = self.userListTV.getMarkingDirectory()
+    	markingFolder = moduleFolder
     	if (assignmentFolder == "No Assignment info") or ((assignmentFolder == "Specify assignment...")): 
     		print("Error - No Assignment Names Listed")
     		return 0

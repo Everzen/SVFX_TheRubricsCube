@@ -142,7 +142,10 @@ class userTV(QTreeWidget):
 					IDAction = copyStudentID.addAction(str(m["name"]))
 					IDAction.triggered[()].connect(lambda item=linkData: self.openIDPage(item))
 			menu.addSeparator()
+			copStudentData = menu.addAction(str("Copy Student Information"))
+			copStudentData.triggered.connect(self.copyStudentInfo)
 			sendAdminID = menu.addAction(str("Send to " + self.rcMenuData["administratorContact"]["name"]))
+			sendAdminID.triggered.connect(self.emailToAdmin)
 			menu.addSeparator()
 			clearSelection = menu.addAction(self.tr("Clear Selection"))
 			clearSelection.triggered.connect(self.clearSelection)
@@ -200,7 +203,24 @@ class userTV(QTreeWidget):
 					chrome_path = self.rcMenuData["resourcePaths"]["chrome"]
 					webbrowser.get(chrome_path).open(links["link"])
 
+		def getStudentInfo(self):
+			#Builds a string full of the student data and returns it as a string
+			studentInfo = ""
+			for item in self.selectedItems():
+				studentInfo += str(item.text(self.getColumnNumber("ID"))) + " - "
+				studentInfo += str(item.text(self.getColumnNumber("Forename"))) + " "
+				studentInfo += str(item.text(self.getColumnNumber("Surname"))) + " - "
+				studentInfo += str(item.text(self.getColumnNumber("Email"))) + " - "
+				studentInfo += str(item.text(self.getColumnNumber("Course"))) + "\n"
+			return studentInfo
 
+		def copyStudentInfo(self):
+			pyperclip.copy(self.getStudentInfo())
+
+		def emailToAdmin(self):
+			# bod = "This  is a string \n that has line \n breaks in it"
+			self.emailer(("\n\n" + self.getStudentInfo()), "Student Information", self.rcMenuData["administratorContact"]["email"])
+			# self.emailer(bod, "Student Information", self.rcMenuData["administratorContact"]["email"])
 
 
 		def clearSelection(self):
