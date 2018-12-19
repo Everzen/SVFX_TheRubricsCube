@@ -196,7 +196,7 @@ class SVFX_AssetTrackerUI(QDialog):
 
         self.markingFolderButton = QPushButton("Create Marking Folders")
         self.markingFolderButton.clicked.connect(self.createMarkingFolders)
-        self.markingFolderButton.setEnabled(False)
+        self.markingFolderButton.setEnabled(True)
         self.markingFolderButton.setMinimumHeight(100)
         # self.markingFolderButton.setMinimumWidth(100)
         self.sortAssignmentsLabel = QLabel("Sort Assignments")
@@ -303,7 +303,7 @@ class SVFX_AssetTrackerUI(QDialog):
         for i in range(0, self.assignmentDetails["number"]):
             self.assignmentCombo.addItem(self.assignmentDetails["titles"][i])
         #Now activate the rest of the UI
-        self.markingFolderButton.setEnabled(True)
+        #self.markingFolderButton.setEnabled(True)
 
 
     def buildModuleBoxFolders(self):
