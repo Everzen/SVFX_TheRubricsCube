@@ -167,13 +167,33 @@ class userTV(QTreeWidget):
 			# print("Email String is: " + emailString)
 			return emailString
 
+		def getStudentName(self):
+			nameString = ""
+			selItems = self.selectedItems()
+			if len(selItems) > 1:
+				#print("Multiple students selected")
+				nameString = "all"
+			elif len(selItems) == 1: #We have the selected a single student so grab the name
+				nameString = selItems[0].text(self.getColumnNumber("Forename"))  #This is a hardcoded reference to the Forename Column
+				nameString = nameString.lower() #Convert string to lower case
+				nameString = nameString.capitalize()  #Capitalise the first letter
+			# print("Email String is: " + emailString)
+			return nameString		
+
+		def insertModuleCodeAndName(self, text):
+			splitText = text.split("<!Module Name!>")
+			newText = text
+			if len(splitText) == 2 : #We have the correct split around a single module name, so insert the module name and Code
+				newText = splitText[0] + " " + self.getModuleCode() + " - " + self.getModuleTitle() + splitText[1]
+			return newText 
+
 		def copyEmailsToClipboard(self):
 			pyperclip.copy(self.getEmailStringList())
 
 		def emailer(self, text, subject, recipient):
 			outlook = win32.Dispatch('outlook.application')
 			mail = outlook.CreateItem(0)
-			mail.To = recipient
+			mail.Bcc = recipient
 			mail.Subject = subject
 			mail.HtmlBody = text
 			mail.Display(True)
@@ -186,7 +206,9 @@ class userTV(QTreeWidget):
 			# print(str(self.rcMenuData["emails"]))
 			for email in self.rcMenuData["emails"]:
 				if email["name"] == dictText:
-					self.emailer(email["body"], email["subject"], self.getEmailStringList())
+					bodyWithModule = self.insertModuleCodeAndName(email["body"]) #This will insert the module name and code into the body of text if <!Module Name!> is found in the string.
+					emailBody = "Hi " + self.getStudentName() +",<br><br>" + bodyWithModule
+					self.emailer(emailBody, email["subject"], self.getEmailStringList())
 
 		def copyIDToClipboard(self, position):
 			item = self.itemAt(position)
@@ -211,7 +233,7 @@ class userTV(QTreeWidget):
 				studentInfo += str(item.text(self.getColumnNumber("Forename"))) + " "
 				studentInfo += str(item.text(self.getColumnNumber("Surname"))) + " - "
 				studentInfo += str(item.text(self.getColumnNumber("Email"))) + " - "
-				studentInfo += str(item.text(self.getColumnNumber("Course"))) + "\n"
+				studentInfo += str(item.text(self.getColumnNumber("Course"))) + "<br>"
 			return studentInfo
 
 		def copyStudentInfo(self):
