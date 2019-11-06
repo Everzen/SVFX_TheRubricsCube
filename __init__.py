@@ -5,8 +5,9 @@
 #       Module marking folders are being generated into the central Module Lists folder at the moment - Need to add the a directory chooser to specify where these folders go
 
 import sys, os, pprint, time
-from PySide.QtCore import *
-from PySide.QtGui import *
+from PySide2.QtCore import *
+from PySide2.QtWidgets import QMainWindow, QDialog, QVBoxLayout, QLabel, QTabWidget, QHBoxLayout, QComboBox, QListWidget, QListWidgetItem, QPushButton, QLineEdit, QCalendarWidget, QApplication, QAbstractItemView
+from PySide2.QtGui import *
 import qdarkstyle
 import json
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

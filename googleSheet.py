@@ -6,6 +6,7 @@
 ##Imports for analysing and saving data
 import xml.etree.ElementTree as ET
 import json
+import ast
 
 
 ##Imports for Google API setup and authentica
@@ -18,12 +19,13 @@ import pprint
 import time
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-markingDataJsonFile = "resources/MarkingData.json"
+markingDataJsonFile = 'resources/MarkingData.json'
 
 #~~~~~~~~~~~~~~~~~~~~~~FUNCTIONS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def grabInfo(infoType, jsonFile = markingDataJsonFile):
     with open(jsonFile) as json_file:
             info = json.load(json_file)
+            # info = ast.literal_eval(file.read())
             return info[infoType]
 
 
@@ -76,14 +78,14 @@ def buildMarkSheet(moduleData):
     "values": studentSheetData,
   }
 
-  print "Updating Student Details"
+  print("Updating Student Details")
   sheetService.spreadsheets().values().update(spreadsheetId=ModuleMarkSheet['id'], range=studentRange, valueInputOption='USER_ENTERED', body=body).execute()
 
   #Update Module Code
   body = {
     "values": [[moduleData['code']]]
   }
-  print "Module Code"
+  print("Module Code")
   sheetService.spreadsheets().values().update(spreadsheetId=ModuleMarkSheet['id'], range="Module Specifications!C2", valueInputOption='USER_ENTERED', body=body).execute()
 
   #Update First Marker

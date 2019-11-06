@@ -1,9 +1,12 @@
 
-from PySide.QtCore import *
-from PySide.QtGui import *
+from PySide2.QtCore import *
+from PySide2.QtGui import *
+from PySide2.QtWidgets import QTreeWidget, QTreeWidgetItem, QAbstractItemView, QMenu
 import os
 import webbrowser
-import win32com.client as win32   
+# import win32com.client as win32
+import win32com.client
+from win32com.client import Dispatch, constants
 import pyperclip
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 import xml.etree.ElementTree as ET
@@ -61,9 +64,10 @@ class userTV(QTreeWidget):
 			return self.markingDirectory
 
 		def getCourseShortName(self,longName):
-		    for c in self.courseList:
-		        if longName == c["name"]: return c["shortName"]
-		    return "No Course Found"
+			for c in self.courseList:
+				print("DataBase coursename is: " + longName + "End")
+				if longName.rstrip() == c["name"]: return c["shortName"] #Remove spaces from the right of word
+			return "No Course Found"
 
 		def getStudents(self):  
 		    tree = ET.parse(self.xmlFile)
@@ -135,12 +139,13 @@ class userTV(QTreeWidget):
 			if (len(self.selectedItems()) == 1): #Copying ID numbers only makes sense for an individual
 				menu.addSeparator()
 				copyStudentID = menu.addAction(self.tr("Copy Student ID"))
-				copyStudentID.triggered[()].connect(lambda item=position: self.copyIDToClipboard(item))
+				copyStudentID.triggered[()].connect(self.copyIDToClipboard(position))
 				copyStudentID = menu.addMenu(self.tr("Open Student ID"))
 				for m in self.rcMenuData["studentIDLinks"]:
 					linkData = {"position":position, "text":m["name"]}
 					IDAction = copyStudentID.addAction(str(m["name"]))
-					IDAction.triggered[()].connect(lambda item=linkData: self.openIDPage(item))
+					# IDAction.triggered[()].connect(lambda item=linkData: self.openIDPage(item))
+					IDAction.triggered[()].connect(self.openIDPage(linkData))
 			menu.addSeparator()
 			copStudentData = menu.addAction(str("Copy Student Information"))
 			copStudentData.triggered.connect(self.copyStudentInfo)
@@ -191,12 +196,28 @@ class userTV(QTreeWidget):
 			pyperclip.copy(self.getEmailStringList())
 
 		def emailer(self, text, subject, recipient):
-			outlook = win32.Dispatch('outlook.application')
-			mail = outlook.CreateItem(0)
-			mail.Bcc = recipient
-			mail.Subject = subject
-			mail.HtmlBody = text
-			mail.Display(True)
+			# outlook = win32.Dispatch('outlook.application')
+			# mail = outlook.CreateItem(0)
+			# mail.Bcc = recipient
+			# mail.Subject = subject
+			# mail.HtmlBody = text
+			# mail.Display(True)
+
+			const=win32com.client.constants
+			olMailItem = 0x0
+			obj = win32com.client.Dispatch("Outlook.Application")
+			newMail = obj.CreateItem(olMailItem)
+			newMail.Subject = subject
+			# newMail.Body = "I AM\nTHE BODY MESSAGE!"
+			newMail.BodyFormat = 2 # olFormatHTML https://msdn.microsoft.com/en-us/library/office/aa219371(v=office.11).aspx
+			newMail.HTMLBody = "<HTML><BODY>{0}</BODY></HTML>".format(text)
+			newMail.Bcc = recipient
+			# newMail.To = "st6@bolton.ac.uk"
+			# attachment1 = r"C:\Temp\example.pdf"
+			# newMail.Attachments.Add(Source=attachment1)
+			newMail.display()
+
+
 
 		def sendGeneralEmail(self):
 			self.emailer("", "", self.getEmailStringList())
@@ -211,21 +232,27 @@ class userTV(QTreeWidget):
 					self.emailer(emailBody, email["subject"], self.getEmailStringList())
 
 		def copyIDToClipboard(self, position):
-			item = self.itemAt(position)
-			IDNo = str(item.text(self.getColumnNumber("ID")))
-			pyperclip.copy(IDNo)
-			print(IDNo)
+			print("Copying")
+			def copyIDToClipboardMenu():
+				item = self.itemAt(position)
+				IDNo = str(item.text(self.getColumnNumber("ID")))
+				pyperclip.copy(IDNo)
+				print(IDNo)
+			return copyIDToClipboardMenu
 
 		def openIDPage(self, linkData):
 			#Copy Studnet ID to clipboard
-			self.copyIDToClipboard(linkData["position"])
-			#We can only have one selected Item so
-			for links in self.rcMenuData["studentIDLinks"]:
-				if links["name"] == linkData["text"]: #We know which link it is to open
-					chrome_path = self.rcMenuData["resourcePaths"]["chrome"]
-					webbrowser.get(chrome_path).open(links["link"])
+			print("Open ID Page")
+			def openIDPageMenu():
+				self.copyIDToClipboard(linkData["position"])
+				#We can only have one selected Item so
+				for links in self.rcMenuData["studentIDLinks"]:
+					if links["name"] == linkData["text"]: #We know which link it is to open
+						chrome_path = self.rcMenuData["resourcePaths"]["chrome"]
+						webbrowser.get(chrome_path).open(links["link"])
+			return openIDPageMenu
 
-		def getStudentInfo(self):
+		def getStudentInfo(self, splitter):
 			#Builds a string full of the student data and returns it as a string
 			studentInfo = ""
 			for item in self.selectedItems():
@@ -233,15 +260,15 @@ class userTV(QTreeWidget):
 				studentInfo += str(item.text(self.getColumnNumber("Forename"))) + " "
 				studentInfo += str(item.text(self.getColumnNumber("Surname"))) + " - "
 				studentInfo += str(item.text(self.getColumnNumber("Email"))) + " - "
-				studentInfo += str(item.text(self.getColumnNumber("Course"))) + "<br>"
+				studentInfo += str(item.text(self.getColumnNumber("Course"))) + splitter
 			return studentInfo
 
 		def copyStudentInfo(self):
-			pyperclip.copy(self.getStudentInfo())
+			pyperclip.copy(self.getStudentInfo("\n"))
 
 		def emailToAdmin(self):
 			# bod = "This  is a string \n that has line \n breaks in it"
-			self.emailer(("\n\n" + self.getStudentInfo()), "Student Information", self.rcMenuData["administratorContact"]["email"])
+			self.emailer(("\n\n" + self.getStudentInfo("<br>")), "Student Information", self.rcMenuData["administratorContact"]["email"])
 			# self.emailer(bod, "Student Information", self.rcMenuData["administratorContact"]["email"])
 
 
@@ -302,7 +329,7 @@ class userTV(QTreeWidget):
 		    if e.mimeData().hasUrls:
 		        e.setDropAction(Qt.CopyAction)
 		        e.accept()
-		        print "Detected Drop"
+		        print("Detected Drop")
 		        # Workaround for OSx dragging and dropping
 		        for url in e.mimeData().urls():
 		                fname = str(url.toLocalFile())
@@ -314,13 +341,13 @@ class userTV(QTreeWidget):
 		        self.dirLabel.setText(self.moduleTitle)
 		        # print("Dir Text: " + self.dirLabel.text())
 		        self.dirLabel.repaint()
-		        print "Got called"
+		        print("Got called")
 		        # self.setColumnCount(5)
 		        self.getStudents()
 		        self.populateTreeList()
 		        # print(self.xmlFile)
 		        # print(self.markingDirectory)
 		        # print("Dir Text: " + self.dirLabel.text())		    else:
-		    	print "ignored"
+		    	# print "ignored"
 		        e.ignore()
 
