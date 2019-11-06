@@ -6,7 +6,7 @@
 
 import sys, os, pprint, time
 from PySide2.QtCore import *
-from PySide2.QtWidgets import QMainWindow, QDialog, QVBoxLayout, QLabel, QTabWidget, QHBoxLayout, QComboBox, QListWidget, QListWidgetItem, QPushButton, QLineEdit, QCalendarWidget, QApplication, QAbstractItemView
+from PySide2.QtWidgets import QMainWindow, QDialog, QWidget, QVBoxLayout, QLabel, QTabWidget, QHBoxLayout, QComboBox, QListWidget, QListWidgetItem, QPushButton, QLineEdit, QCalendarWidget, QApplication, QAbstractItemView, QSizePolicy, QSpacerItem
 from PySide2.QtGui import *
 import qdarkstyle
 import json
@@ -91,10 +91,13 @@ class SVFX_AssetTrackerUI(QDialog):
 
         userLeftLayout = QVBoxLayout()
         self.userListTV = widgets.userTV(courseList, self.folderLabel, rcMenuData)
-        self.setMinimumSize(400,800)
-        self.setMaximumSize(1150,800)
+        self.setMinimumWidth(750)
+        self.setMaximumWidth(750)
+        self.setMinimumHeight(900)
+        self.markingSheetTab = QWidget() #This is a holding widget for the marking folder options
         self.tabWidget = QTabWidget()
-        self.tabWidget.addTab(self.userListTV, "Module Box Creation")
+        self.tabWidget.addTab(self.userListTV, "Student Contact")
+        self.tabWidget.addTab(self.markingSheetTab, "Module Marking Creation")
         # self.tabWidget.addTab(QWidget(), "Relative")
         # self.tabWidget.addTab(QWidget(), "Questions")
         # self.tabWidget.addTab(QWidget(), "Quest Specific")
@@ -113,7 +116,28 @@ class SVFX_AssetTrackerUI(QDialog):
         moduleFolderLayout.addWidget(self.chooseModuleCombo)
         moduleFolderLayout.addWidget(self.folderLabel)
 
+        #Setup regarding List - This is going to dictate who the message is about
+        courseFilterLayout = QHBoxLayout()
+        # courseLabel = QLabel("Filter by Courses")
+        self.courseListLW =  QListWidget()
+        self.courseListLW.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.courseListLW.setMaximumHeight(19*len(courseList))
+        for c in courseList:
+            newCourse = QListWidgetItem(c["shortName"])
+            self.courseListLW.addItem(newCourse)
+
+        courseFilterButton = QPushButton("Apply Course Filter")
+
+        courseFilterButton.clicked.connect(self.filterCourses)
+        courseFilterButton.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        courseFilterButton.setMaximumHeight(self.courseListLW.frameGeometry().height())
+        # courseFilterButton.setMinimumHeight(25)
+
+        courseFilterLayout.addWidget(self.courseListLW)
+        courseFilterLayout.addWidget(courseFilterButton)
+
         userLeftLayout.addLayout(moduleFolderLayout)
+        userLeftLayout.addLayout(courseFilterLayout)
         userLeftLayout.addWidget(self.tabWidget)
 
 
@@ -123,21 +147,15 @@ class SVFX_AssetTrackerUI(QDialog):
         userColumnWidth = 250
         userTabWidth = 400
         
-        #Setup regarding List - This is going to dictate who the message is about
-        courseLabel = QLabel("Filter by Courses")
-        self.courseListLW =  QListWidget()
-        self.courseListLW.setSelectionMode(QAbstractItemView.ExtendedSelection)
-        self.courseListLW.setMaximumHeight(19*len(courseList))
-        for c in courseList:
-            newCourse = QListWidgetItem(c["shortName"])
-            self.courseListLW.addItem(newCourse)
+        #Setup self.markingSheetTab options
+        Vlayout = QVBoxLayout()
+        Vlayout.setAlignment(Qt.AlignTop)
+        self.markingSheetTab.setLayout(Vlayout)
+        
+        markerHLayout = QHBoxLayout()
+        firstMarkerVLayout = QVBoxLayout()
+        secondMarkerVLayout = QVBoxLayout()
 
-        courseFilterButton = QPushButton("Apply Course Filter")
-        courseFilterButton.clicked.connect(self.filterCourses)
-        courseFilterButton.setMinimumHeight(25)
-        # regardingListLW.insertItems(0, regardingList)
-
-        firstMarkerLabel = QLabel("First Marker")
         self.firstMarkerCombo = QComboBox(self)
         self.firstMarkerCombo.addItem("Choose First Marker...")  
         self.firstMarkerCombo.activated[str].connect(self.firstMarkerComboSel)       
@@ -146,64 +164,97 @@ class SVFX_AssetTrackerUI(QDialog):
         self.firstMarkerEmail = QLineEdit()
         self.firstMarkerEmail.setReadOnly(True)
 
+        firstMarkerVLayout.addWidget(self.firstMarkerCombo)
+        firstMarkerVLayout.addWidget(self.firstMarkerEmail)
 
-        secondMarkerLabel = QLabel("Second Marker")
         self.secondMarkerCombo = QComboBox(self)
         self.secondMarkerCombo.addItem("Choose Second Marker...")
         self.secondMarkerCombo.activated[str].connect(self.secondMarkerComboSel)       
-
         for s in staffList:
             self.secondMarkerCombo.addItem(s["name"])
         self.secondMarkerEmail = QLineEdit()
         self.secondMarkerEmail.setReadOnly(True)
 
+        secondMarkerVLayout.addWidget(self.secondMarkerCombo)
+        secondMarkerVLayout.addWidget(self.secondMarkerEmail)
+
+        markerHLayout.addLayout(firstMarkerVLayout)
+        markerHLayout.addLayout(secondMarkerVLayout)
+        Vlayout.addLayout(markerHLayout)
+
         yearLayout = QHBoxLayout()
+        yearLayout.setAlignment(Qt.AlignLeft)
+        yearLabel = QLabel("Year and Semester:")
         self.yearCombo = QComboBox(self)
         self.yearCombo.addItems(yearList)    #JSON Coded year dates
         self.semesterCombo = QComboBox(self)
         self.semesterCombo.addItems(semesterList)    #JSON Coded year dates
+        self.getGoogleFolderID()
 
+        yearLayout.addWidget(yearLabel)
         yearLayout.addWidget(self.yearCombo)
         yearLayout.addWidget(self.semesterCombo)
-        self.getGoogleFolderID()
+        Vlayout.addLayout(yearLayout)
+
+        moduleTimingHLayout = QHBoxLayout()
+        modulePrepVLayout = QVBoxLayout()
+        modulePrepVLayout.setAlignment(Qt.AlignTop)
+        moduleReviewVLayout = QVBoxLayout()
+        moduleReviewVLayout.setAlignment(Qt.AlignTop)
 
         prepDateLabel = QLabel("Module Preparation Date:")
         self.prepDate = QCalendarWidget(self)
+        self.prepDate.setMaximumHeight(200)
+        self.prepDate.setMaximumWidth(400)
+
+        modulePrepVLayout.addWidget(prepDateLabel)
+        modulePrepVLayout.addWidget(self.prepDate)
+
         reviewDateLabel = QLabel("Module Review Date:")
         self.reviewDate = QCalendarWidget(self)
+        self.reviewDate.setMaximumHeight(200)
 
-        moduleSettingsLayout.addWidget(courseLabel)
-        moduleSettingsLayout.addWidget(self.courseListLW)
-        moduleSettingsLayout.addWidget(courseFilterButton)
-        moduleSettingsLayout.addWidget(firstMarkerLabel)
-        moduleSettingsLayout.addWidget(self.firstMarkerCombo)
-        moduleSettingsLayout.addWidget(self.firstMarkerEmail)
-        moduleSettingsLayout.addWidget(secondMarkerLabel)
-        moduleSettingsLayout.addWidget(self.secondMarkerCombo)
-        moduleSettingsLayout.addWidget(self.secondMarkerEmail)
-        moduleSettingsLayout.addLayout(yearLayout)
-        moduleSettingsLayout.addWidget(prepDateLabel)
-        moduleSettingsLayout.addWidget(self.prepDate)
-        moduleSettingsLayout.addWidget(reviewDateLabel)
-        moduleSettingsLayout.addWidget(self.reviewDate)
+        moduleReviewVLayout.addWidget(reviewDateLabel)
+        moduleReviewVLayout.addWidget(self.reviewDate)
 
-        activationLayout = QVBoxLayout()
-        activationLayout.setAlignment(Qt.AlignTop)
+        moduleTimingHLayout.addLayout(modulePrepVLayout)
+        moduleTimingHLayout.addLayout(moduleReviewVLayout)
+        Vlayout.addLayout(moduleTimingHLayout)
 
         moduleBoxDocButton = QPushButton("Build Module Box Document")
         moduleBoxDocButton.clicked.connect(self.buildModuleBox)
-        moduleBoxDocButton.setMinimumHeight(400)
-        moduleBoxDocButton.setMinimumWidth(300)
+        moduleBoxDocButton.setMinimumHeight(80)
+        Vlayout.addWidget(moduleBoxDocButton)
 
+        verticalSpacer = QSpacerItem(20, 100, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        
+        # moduleSettingsLayout.addWidget(courseLabel)
+        # moduleSettingsLayout.addWidget(self.courseListLW)
+        # moduleSettingsLayout.addWidget(courseFilterButton)
+        # moduleSettingsLayout.addWidget(firstMarkerLabel)
+        # moduleSettingsLayout.addWidget(self.firstMarkerCombo)
+        # moduleSettingsLayout.addWidget(self.firstMarkerEmail)
+        # moduleSettingsLayout.addWidget(secondMarkerLabel)
+        # moduleSettingsLayout.addWidget(self.secondMarkerCombo)
+        # moduleSettingsLayout.addWidget(self.secondMarkerEmail)
+        # moduleSettingsLayout.addLayout(yearLayout)
+        # moduleSettingsLayout.addWidget(prepDateLabel)
+        # moduleSettingsLayout.addWidget(self.prepDate)
+        # moduleSettingsLayout.addWidget(reviewDateLabel)
+        # moduleSettingsLayout.addWidget(self.reviewDate)
+
+        extrasLayout = QHBoxLayout()
+        
         self.markingFolderButton = QPushButton("Create Marking Folders")
         self.markingFolderButton.clicked.connect(self.createMarkingFolders)
-        self.markingFolderButton.setEnabled(True)
-        self.markingFolderButton.setMinimumHeight(100)
-        # self.markingFolderButton.setMinimumWidth(100)
+        self.markingFolderButton.setEnabled(False)
+        self.markingFolderButton.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.markingFolderButton.setMaximumWidth(300)
+        extrasLayout.addWidget(self.markingFolderButton)
+
+        sortAssignmentsVLayout = QVBoxLayout()
         self.sortAssignmentsLabel = QLabel("Sort Assignments")
         self.sortAssignmentsLabel.setEnabled(False)
-
-        assignmentSortLayout = QHBoxLayout()
         self.assignmentCombo = QComboBox(self)
         self.assignmentCombo.addItem("No Assignment info")
         self.assignmentCombo.setEnabled(False)
@@ -211,24 +262,24 @@ class SVFX_AssetTrackerUI(QDialog):
         self.sortAssignmentsButton.clicked.connect(self.sortAssignmentFiles)
         self.sortAssignmentsButton.setEnabled(False)
 
-        assignmentSortLayout.addWidget(self.assignmentCombo)
-        assignmentSortLayout.addWidget(self.sortAssignmentsButton)
+        sortAssignmentsVLayout.addWidget(self.sortAssignmentsLabel)
+        sortAssignmentsVLayout.addWidget(self.assignmentCombo)
+        sortAssignmentsVLayout.addWidget(self.sortAssignmentsButton)
+        extrasLayout.addLayout(sortAssignmentsVLayout)
 
-        exportFeedbackButton = QPushButton("Export Feedback")
-        exportFeedbackButton.setMinimumHeight(215)
-        # exportFeedbackButton.setMinimumWidth(100)
-        exportFeedbackButton.setEnabled(False)
+        Vlayout.addLayout(extrasLayout)
+        Vlayout.addItem(verticalSpacer)
+        # exportFeedbackButton = QPushButton("Export Feedback")
+        # exportFeedbackButton.setMinimumHeight(215)
+        # # exportFeedbackButton.setMinimumWidth(100)
+        # exportFeedbackButton.setEnabled(False)
 
-        activationLayout.addWidget(moduleBoxDocButton)
-        activationLayout.addWidget(self.markingFolderButton)
-        activationLayout.addWidget(self.sortAssignmentsLabel)
-        activationLayout.addLayout(assignmentSortLayout)
-        activationLayout.addWidget(exportFeedbackButton)
+
 
         mainLayout = QHBoxLayout()
         mainLayout.addLayout(userLeftLayout)
-        mainLayout.addLayout(moduleSettingsLayout)
-        mainLayout.addLayout(activationLayout)
+        # mainLayout.addLayout(moduleSettingsLayout)
+        # mainLayout.addLayout(activationLayout)
 
         # mainLayout.addWidget(tabWidget)
         # mainLayout.addWidget(buttonBox)

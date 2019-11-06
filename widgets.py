@@ -134,7 +134,7 @@ class userTV(QTreeWidget):
 			# for email in module
 			for m in self.rcMenuData["emails"]:
 				emailAction = copyEmail.addAction(str(m["name"]))
-				emailAction.triggered[()].connect(lambda item=m["name"]: self.sendContentEmail(item))
+				emailAction.triggered.connect(self.sendContentEmail(m["name"]))
 
 			if (len(self.selectedItems()) == 1): #Copying ID numbers only makes sense for an individual
 				menu.addSeparator()
@@ -217,19 +217,20 @@ class userTV(QTreeWidget):
 			# newMail.Attachments.Add(Source=attachment1)
 			newMail.display()
 
-
-
 		def sendGeneralEmail(self):
 			self.emailer("", "", self.getEmailStringList())
 
 		def sendContentEmail(self, dictText):
-			emailList = self.getEmailStringList()
-			# print(str(self.rcMenuData["emails"]))
-			for email in self.rcMenuData["emails"]:
-				if email["name"] == dictText:
-					bodyWithModule = self.insertModuleCodeAndName(email["body"]) #This will insert the module name and code into the body of text if <!Module Name!> is found in the string.
-					emailBody = "Hi " + self.getStudentName() +",<br><br>" + bodyWithModule
-					self.emailer(emailBody, email["subject"], self.getEmailStringList())
+			print("Send Content Email")
+			def sendContentEmailMenu():
+				emailList = self.getEmailStringList()
+				# print(str(self.rcMenuData["emails"]))
+				for email in self.rcMenuData["emails"]:
+					if email["name"] == dictText:
+						bodyWithModule = self.insertModuleCodeAndName(email["body"]) #This will insert the module name and code into the body of text if <!Module Name!> is found in the string.
+						emailBody = "Hi " + self.getStudentName() +",<br><br>" + bodyWithModule
+						self.emailer(emailBody, email["subject"], self.getEmailStringList())
+			return sendContentEmailMenu
 
 		def copyIDToClipboard(self, position):
 			print("Copying")
@@ -271,11 +272,9 @@ class userTV(QTreeWidget):
 			self.emailer(("\n\n" + self.getStudentInfo("<br>")), "Student Information", self.rcMenuData["administratorContact"]["email"])
 			# self.emailer(bod, "Student Information", self.rcMenuData["administratorContact"]["email"])
 
-
 		def clearSelection(self):
 			for item in self.selectedItems():
 				item.setSelected(False)
-
 
 		def headerMenu(self, position):
 			menu = QMenu()
