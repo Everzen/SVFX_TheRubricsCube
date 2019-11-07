@@ -283,7 +283,7 @@ class SVFX_AssetTrackerUI(QDialog):
         if len(selCourses) == 0: selCourseArr = ["SFX", "VFX", "SMUFX", "MMFX"]  #No course is selected, so no filter is applied
         else:
             for c in selCourses: selCourseArr.append(c.text())
-        print("Selected Courses: " + str(selCourseArr))
+        # print("Selected Courses: " + str(selCourseArr))
         self.userListTV.filterbyCourse(selCourseArr)
         print(str(self.prepDate.selectedDate().day()) + "/" + str(self.prepDate.selectedDate().month()) + "/" + str(self.prepDate.selectedDate().year()))
         print(str(self.reviewDate.selectedDate().day()) + "/" + str(self.reviewDate.selectedDate().month()) + "/" + str(self.reviewDate.selectedDate().year()))
@@ -301,15 +301,15 @@ class SVFX_AssetTrackerUI(QDialog):
         self.secondMarkerEmail.setText(gmail)
 
     def getGoogleFolderID(self):
-        print(self.yearCombo.currentText())
-        print(self.semesterCombo.currentText())
+        # print(self.yearCombo.currentText())
+        # print(self.semesterCombo.currentText())
         for year in yearInfo:
             if year["year"] == self.yearCombo.currentText():
                 return year[self.semesterCombo.currentText()]
 
 
     def getMasterTemplateGoogleID(self):
-        print("MasterTemplate : " + grabInfo("resourcePaths")["masterGoogleTemplate"])
+        # print("MasterTemplate : " + grabInfo("resourcePaths")["masterGoogleTemplate"])
         return grabInfo("resourcePaths")["masterGoogleTemplate"]
 
     def buildModuleBox(self):
@@ -326,7 +326,7 @@ class SVFX_AssetTrackerUI(QDialog):
         moduleData["secondMarker"] = self.secondMarkerCombo.currentText()
         moduleData["masterGTemplate"] = self.getMasterTemplateGoogleID()
         moduleData["markingGFolder"] = self.getGoogleFolderID()
-        pprint.pprint(moduleData)
+        # pprint.pprint(moduleData)
         self.assignmentDetails = googleSheet.buildMarkSheet(moduleData)
         #Now that we have the assessment details, we can add the items to the combo box
         self.assignmentCombo.removeItem(0)
@@ -374,16 +374,16 @@ class SVFX_AssetTrackerUI(QDialog):
     		return 0
     	else:
     		dirFiles = [f for f in os.listdir(markingFolder) if os.path.isfile(os.path.join(markingFolder, f))]
-    		print("Directory Files: " + str(dirFiles))
+    		# print("Directory Files: " + str(dirFiles))
     		#Now loop through all the student IDs and match up the files
     		for s in self.studentFolders:
     			for f in dirFiles:
     				if s['id'] in f:
     					# print("Found: " + s['id'] + " in " + str(f))
     					filename = os.path.split(f)  #This priduces an arra
-    					print ("Split : " + str(filename))
-    					print("The File: " + str(f))
-    					print("The Location: " + str(s['folder'] + "//" + assignmentFolder + "//" + filename[1]))
+    					# print ("Split : " + str(filename))
+    					# print("The File: " + str(f))
+    					# print("The Location: " + str(s['folder'] + "//" + assignmentFolder + "//" + filename[1]))
     					os.rename((markingFolder + "//" + f), (s['folder'] + "//" + assignmentFolder + "//" + filename[1])) #Renameing is the way that windows moves files from one folder to another
 
 

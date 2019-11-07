@@ -66,7 +66,7 @@ class userTV(QTreeWidget):
 
 		def getCourseShortName(self,longName):
 			for c in self.courseList:
-				print("DataBase coursename is: " + longName + "End")
+				# print("DataBase coursename is: " + longName + "End")
 				if longName.rstrip() == c["name"]: return c["shortName"] #Remove spaces from the right of word
 			return "No Course Found"
 
@@ -222,7 +222,7 @@ class userTV(QTreeWidget):
 			self.emailer("", "", self.getEmailStringList())
 
 		def sendContentEmail(self, dictText):
-			print("Send Content Email")
+			# print("Send Content Email")
 			def sendContentEmailMenu():
 				emailList = self.getEmailStringList()
 				# print(str(self.rcMenuData["emails"]))
@@ -234,7 +234,7 @@ class userTV(QTreeWidget):
 			return sendContentEmailMenu
 
 		def copyIDToClipboard(self, position):
-			print("Copying")
+			# print("Copying")
 			def copyIDToClipboardMenu():
 				item = self.itemAt(position)
 				IDNo = str(item.text(self.getColumnNumber("ID")))
@@ -244,7 +244,7 @@ class userTV(QTreeWidget):
 
 		def openIDPage(self, linkData):
 			#Copy Studnet ID to clipboard
-			print("Open ID Page")
+			# print("Open ID Page")
 			def openIDPageMenu():
 				self.copyIDToClipboard(linkData["position"])
 				#We can only have one selected Item so
@@ -280,7 +280,7 @@ class userTV(QTreeWidget):
 		def headerMenu(self, position):
 			menu = QMenu()
 			col = self.columnAt(position.x())
-			print (col)
+			# print (col)
 			headerText = self.headerItem().text(col)
 			# sort = menu.addAction(self.tr("Sort by " + headerText))
 			sortText =  ("Sort by " +  str(headerText))
@@ -291,7 +291,7 @@ class userTV(QTreeWidget):
 			action = menu.exec_(self.viewport().mapToGlobal(position))
 			if action == sort: 
 				self.reSortList(self.headerMapping[headerText])
-				print ("map order" + str(self.headerMapping[headerText]))
+				# print ("map order" + str(self.headerMapping[headerText]))
 			if action == hide: #Turn off the showheader so populateTreeList regenerates the table without that header
 				self.showHeaders[headerText] = False
 				self.activeHeaders = self.collectActiveHeaders()
@@ -329,7 +329,7 @@ class userTV(QTreeWidget):
 		    if e.mimeData().hasUrls:
 		        e.setDropAction(Qt.CopyAction)
 		        e.accept()
-		        print("Detected Drop")
+		        # print("Detected Drop")
 		        # Workaround for OSx dragging and dropping
 		        for url in e.mimeData().urls():
 		                fname = str(url.toLocalFile())
@@ -341,7 +341,7 @@ class userTV(QTreeWidget):
 		        self.dirLabel.setText(self.moduleTitle)
 		        # print("Dir Text: " + self.dirLabel.text())
 		        self.dirLabel.repaint()
-		        print("Got called")
+		        # print("Got called")
 		        # self.setColumnCount(5)
 		        self.getStudents()
 		        self.populateTreeList()
