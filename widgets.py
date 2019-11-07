@@ -12,17 +12,18 @@ import pyperclip
 import xml.etree.ElementTree as ET
 from operator import itemgetter
 
-
-
+from utilities import grabInfo
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 class userTV(QTreeWidget):
-		def __init__(self, courseList, dirLabel, rcMenuData,parent = None):
+		def __init__(self, courseList, dirLabel, emailList, rcMenuData,parent = None):
 			QTreeWidget.__init__(self, parent)
 			self.setAcceptDrops(True)
 			self.courseList = courseList
 			self.dirLabel = dirLabel
 			self.xmlFile = ""
 			self.markingDirectory = "" 
+			self.emailList = emailList
 			self.setMinimumSize(800,600)
 			self.setSelectionBehavior(QAbstractItemView.SelectRows)
 			self.setSelectionMode(QAbstractItemView.MultiSelection)
@@ -132,7 +133,7 @@ class userTV(QTreeWidget):
 			generalEmail.triggered.connect(self.sendGeneralEmail)
 			copyEmail = menu.addMenu(self.tr("Send Email"))
 			# for email in module
-			for m in self.rcMenuData["emails"]:
+			for m in self.emailList:
 				emailAction = copyEmail.addAction(str(m["name"]))
 				emailAction.triggered.connect(self.sendContentEmail(m["name"]))
 
@@ -225,7 +226,7 @@ class userTV(QTreeWidget):
 			def sendContentEmailMenu():
 				emailList = self.getEmailStringList()
 				# print(str(self.rcMenuData["emails"]))
-				for email in self.rcMenuData["emails"]:
+				for email in self.emailList:
 					if email["name"] == dictText:
 						bodyWithModule = self.insertModuleCodeAndName(email["body"]) #This will insert the module name and code into the body of text if <!Module Name!> is found in the string.
 						emailBody = "Hi " + self.getStudentName() +",<br><br>" + bodyWithModule

@@ -15,57 +15,28 @@ from operator import itemgetter
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 import widgets
 import googleSheet
+from utilities import grabInfo
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 app = QApplication(sys.argv)
-app.setStyleSheet(qdarkstyle.load_stylesheet())
+# app.setStyleSheet(qdarkstyle.load_stylesheet())
+sshFile = "resources/darkorange.stylesheet"
+with open(sshFile,"r") as fh:
+    app.setStyleSheet(fh.read())
+
+# app.setStyleSheet(qdarkstyle.load_stylesheet())
 # ~~~~~~~~~~~~~~~~~~~~~RESOURCES~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-markingDataJsonFile = "resources/MarkingData.json"
-
-#~~~~~~~~~~~~~~~~~~~~~~FUNCTIONS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-def grabInfo(infoType, jsonFile = markingDataJsonFile):
-    with open(jsonFile) as json_file:
-            info = json.load(json_file)
-            return info[infoType]
-
 
 
 staffList  = grabInfo("staff")
-# print ("COURSE DATA")
-# print ("Course Name : " + root.get('Textbox12'))
-# print ("Course Code : " + root.get('Textbox4'))
-# print ("Course Tutor : " + root.get('Textbox16'))
-# print ("Module Semester 1 : " + root.get('Textbox23'))
-# print ("Module Year : " + root.get('Textbox20'))
-
-
-print ("\nSTUDENT LIST\n")
-# staffList = [{"name":"Gwyn Carlisle", "gmailID":"gwynnethcarville@gmail.com"},
-#             {"name":"Jim Costello", "gmailID":"unknown"},
-#             {"name":"Richard Jones", "gmailID":"3dframework@gmail.com"},
-#             {"name":"Matt Lilley", "gmailID":"mattpaullilley@gmail.com"},
-#             {"name":"Richard McEvoy-Crompton", "gmailID":"fabrikbouche@gmail.com"},
-#             {"name":"Claire Minehane", "gmailID":"unknown"},
-#             {"name":"Jack Myers", "gmailID":"jacko83@gmail.com"},
-#             {"name":"Sam Taylor", "gmailID":"samtaylorsfx@gmail.com"},
-#             {"name":"Mark Whyte", "gmailID":"mark1virtual@gmail.com"},
-#             {"name":"Natalie Woods", "gmailID":"njwoods87@hotmail.co.uk"}]
-
-
-
 courseList = grabInfo("courseList")
-
-# courseList = [{"name":"BDes(Hons) Special Effects for Film and Television", "code":"CRT022-F-UOB-SX", "shortName":"SFX"},
-#               {"name":"BSc (Hons) Visual Effects for Film and Television", "code":"CRT021-F-UOB-SX", "shortName":"VFX"},
-#               {"name":"BDes(H) Special Make Up Effects for Film and TV", "code":"CRT002-F-UOB-SX", "shortName":"SMUFX"},
-#               {"name":"BDes(Hons) Special Effects Modelmaking for Film and Television", "code":"CRT007-F-UOB-SX", "shortName":"MMFX"}] 
-
 yearInfo = grabInfo("academicYears")
 yearList  = []
 for y in yearInfo:
     yearList.append(y["year"])
 
-# loanList = [studentList[0], studentList[1]]
+#Grab the emails
+emailPath = grabInfo("resourcePaths")["emailTemplate"]
+emailDict = grabInfo("emails", jsonFile = emailPath)
 
 #Find all files in the default SVFX Module folder
 moduleFolder = grabInfo("resourcePaths")["moduleListFolder"]
@@ -90,7 +61,7 @@ class SVFX_AssetTrackerUI(QDialog):
         # self.folderLabel.setText("moo")
 
         userLeftLayout = QVBoxLayout()
-        self.userListTV = widgets.userTV(courseList, self.folderLabel, rcMenuData)
+        self.userListTV = widgets.userTV(courseList, self.folderLabel, emailDict, rcMenuData)
         self.setMinimumWidth(750)
         self.setMaximumWidth(750)
         self.setMinimumHeight(900)
@@ -187,6 +158,7 @@ class SVFX_AssetTrackerUI(QDialog):
         yearLabel = QLabel("Year and Semester:")
         self.yearCombo = QComboBox(self)
         self.yearCombo.addItems(yearList)    #JSON Coded year dates
+        self.yearCombo.setMinimumWidth(65)
         self.semesterCombo = QComboBox(self)
         self.semesterCombo.addItems(semesterList)    #JSON Coded year dates
         self.getGoogleFolderID()
@@ -207,12 +179,19 @@ class SVFX_AssetTrackerUI(QDialog):
         self.prepDate.setMaximumHeight(200)
         self.prepDate.setMaximumWidth(400)
 
+        calendarTweak = QTextCharFormat()
+        calendarTweak.setForeground(QBrush(QColor(230,230,230)))
+        calendarTweak.setBackground(QBrush(QColor(45,45,45)))
+        self.prepDate.setHeaderTextFormat(calendarTweak)
+
         modulePrepVLayout.addWidget(prepDateLabel)
         modulePrepVLayout.addWidget(self.prepDate)
 
         reviewDateLabel = QLabel("Module Review Date:")
         self.reviewDate = QCalendarWidget(self)
         self.reviewDate.setMaximumHeight(200)
+
+        self.reviewDate.setHeaderTextFormat(calendarTweak)
 
         moduleReviewVLayout.addWidget(reviewDateLabel)
         moduleReviewVLayout.addWidget(self.reviewDate)
