@@ -26,25 +26,30 @@ with open(sshFile,"r") as fh:
 # app.setStyleSheet(qdarkstyle.load_stylesheet())
 # ~~~~~~~~~~~~~~~~~~~~~RESOURCES~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 staffList  = grabInfo("staff")
-courseList = grabInfo("courseList")
+# courseList = grabInfo("courseList")
 yearInfo = grabInfo("academicYears")
 yearList  = []
 for y in yearInfo:
     yearList.append(y["year"])
 
 #Grab the emails
-emailPath = grabInfo("resourcePaths")["emailTemplate"]
-emailDict = grabInfo("emails", jsonFile = emailPath)
+localResourcesPath = grabInfo("resourcePaths")["localResources"]
+emailDict = grabInfo("emails", jsonFile = localResourcesPath)
+markingUnlock = grabInfo("rubricPowered", jsonFile = localResourcesPath) == "True"
+
+courseList = grabInfo("courseList", jsonFile = localResourcesPath)
+
 
 #Find all files in the default SVFX Module folder
 moduleFolder = grabInfo("resourcePaths")["moduleListFolder"]
 moduleList = []
 for f in os.listdir(moduleFolder):
-    moduleList.append({"name":f, "fullPath":(moduleFolder + "\\" + f)})
+    if f != "resources":
+        moduleList.append({"name":f, "fullPath":(moduleFolder + "\\" + f)})
 
 semesterList = grabInfo("semesters")
+
 
 #Build an empty dictionary that we can build 
 rcMenuData = grabInfo("RCMenus")
@@ -68,7 +73,7 @@ class SVFX_AssetTrackerUI(QDialog):
         self.markingSheetTab = QWidget() #This is a holding widget for the marking folder options
         self.tabWidget = QTabWidget()
         self.tabWidget.addTab(self.userListTV, "Student Contact")
-        self.tabWidget.addTab(self.markingSheetTab, "Module Marking Creation")
+        if markingUnlock: self.tabWidget.addTab(self.markingSheetTab, "Module Marking Creation")
         # self.tabWidget.addTab(QWidget(), "Relative")
         # self.tabWidget.addTab(QWidget(), "Questions")
         # self.tabWidget.addTab(QWidget(), "Quest Specific")
