@@ -17,6 +17,7 @@ import widgets
 import googleSheet
 from utilities import grabInfo
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 app = QApplication(sys.argv)
 # app.setStyleSheet(qdarkstyle.load_stylesheet())
 sshFile = "resources/darkorange.stylesheet"
@@ -398,6 +399,7 @@ class SVFX_AssetTrackerUI(QDialog):
 reg = SVFX_AssetTrackerUI()
 reg.show()
 # view.show()
+print("Opening VFX Assistant")
 sys.exit(app.exec_())
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 

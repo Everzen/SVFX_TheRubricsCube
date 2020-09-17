@@ -4,6 +4,8 @@ from PySide2.QtGui import *
 from PySide2.QtWidgets import QTreeWidget, QTreeWidgetItem, QAbstractItemView, QMenu
 import os
 import webbrowser
+import csv
+
 # import win32com.client as win32
 import win32com.client
 from win32com.client import Dispatch, constants
@@ -152,6 +154,9 @@ class userTV(QTreeWidget):
 			copStudentData.triggered.connect(self.copyStudentInfo)
 			sendAdminID = menu.addAction(str("Send to " + self.rcMenuData["administratorContact"]["name"]))
 			sendAdminID.triggered.connect(self.emailToAdmin)
+			menu.addSeparator()
+			houdiniLicenseData = menu.addAction(str("Write Out Houdini License Data"))
+			houdiniLicenseData.triggered.connect(self.writeHoudiniLicenses)
 			menu.addSeparator()
 			clearSelection = menu.addAction(self.tr("Clear Selection"))
 			clearSelection.triggered.connect(self.clearSelection)
@@ -305,6 +310,16 @@ class userTV(QTreeWidget):
 			self.populateTreeList()
 			self.dirLabel.setText(" - " + self.moduleTitle)
 			self.dirLabel.repaint()
+
+		def writeHoudiniLicenses(self):
+			print("Writing Licenses")
+			with open('M:/UniversityOfBolton/Scripts/SVFX_TheRubricsCube/HoudiniGraduateLicenses.csv', 'w', newline='') as file:
+				fieldnames = ["First Name", "Last Name", "Institutional Email", "Class Start Date", "Class End Date"]
+				writer = csv.DictWriter(file, fieldnames=fieldnames)
+				writer.writeheader()
+				for item in self.selectedItems():
+					writer.writerow({'First Name': item.text(self.getColumnNumber("Forename")), 'Last Name': item.text(self.getColumnNumber("Surname")), 'Institutional Email': item.text(self.getColumnNumber("Email")), 'Class Start Date': grabInfo("Houdini")["licenseStartDate"], 'Class End Date': grabInfo("Houdini")["licenseEndDate"]})
+			print("Finished Licenses")
 
 		# The following three methods set up dragging and dropping for the app
 		def dragEnterEvent(self, e):
