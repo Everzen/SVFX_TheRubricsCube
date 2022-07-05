@@ -313,7 +313,8 @@ class userTV(QTreeWidget):
 
 		def writeHoudiniLicenses(self):
 			print("Writing Licenses")
-			with open('M:/UniversityOfBolton/Scripts/SVFX_TheRubricsCube/HoudiniGraduateLicenses.csv', 'w', newline='') as file:
+			houdiniPath = grabInfo("resourcePaths")["houdiniLicenses"]
+			with open(houdiniPath, 'w', newline='') as file:
 				fieldnames = ["First Name", "Last Name", "Institutional Email", "Class Start Date", "Class End Date"]
 				writer = csv.DictWriter(file, fieldnames=fieldnames)
 				writer.writeheader()

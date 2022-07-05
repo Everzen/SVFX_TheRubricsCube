@@ -7,16 +7,25 @@
 import xml.etree.ElementTree as ET
 import json
 import ast
+import os
 
 
 ##Imports for Google API setup and authentica
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+import googleapiclient
 from googleapiclient import discovery
+print("googleapiclient: ", googleapiclient.version.__version__)
+#help(googleapiclient.version)
+#help(discovery.__version__)
+print("DISCOVERY: ", discovery.__file__)
+
 from httplib2 import Http
 from oauth2client import file, client, tools
 import pprint
 import time
+print(os.environ)
+#print("ENVIRONMENT: ", os.environ["GOOGLE_APPLICATION_CREDENTIALS"])
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 markingDataJsonFile = 'resources/MarkingData.json'
@@ -48,7 +57,10 @@ def buildMarkSheet(moduleData):
     credz = tools.run_flow(flow, store)
 
   # Build a service, but the type of service that you build will have different methods and properties. In this cause we are building a drive service, so that we can do file operations on the drive
-  SERVICE = discovery.build('drive', 'v2', http=credz.authorize(Http()))
+  #SERVICE = discovery.build('drive', 'v2', http=credz.authorize(Http()))
+  DISCOVERY_SERVICE_URL = 'https://www.googleapis.com/discovery/v1/apis/drive/v2/rest'
+  SERVICE = discovery.build('drive', 'v2', http=credz.authorize(Http()), discoveryServiceUrl=DISCOVERY_SERVICE_URL)
+  # SERVICE = discovery.build('drive', 'v2', http=credz.authorize(Http()))
 
   #moduleData["masterGTemplate"] - contains the google ID for the master Template file. moduleData["markingGFolder"] - contains the Google ID for year and semester folder that we are aiming for.
   moduleMarkingTitle = moduleData["code"] + "_" + moduleData["year"]
@@ -69,7 +81,9 @@ def buildMarkSheet(moduleData):
 
 
   #Now create a new service to operate on the new mark sheet
-  sheetService = discovery.build('sheets', 'v4', http=credz.authorize(Http()))
+  DISCOVERY_SERVICE_SHEETSURL = 'https://sheets.googleapis.com/$discovery/rest?version=v4'
+  sheetService = discovery.build('sheets', 'v4', http=credz.authorize(Http()), discoveryServiceUrl=DISCOVERY_SERVICE_SHEETSURL)
+  #sheetService = discovery.build('sheets', 'v4', http=credz.authorize(Http()))
   studentRange = "A" + str(studentStartRow) + ":D" + str(studentStartRow + len(studentSheetData))
 
   body = {
